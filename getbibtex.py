@@ -15,39 +15,53 @@ def main(downloadpath):
       "safebrowsing.enabled": True,
       "plugins.always_open_pdf_externally": True
     })
-    driver = webdriver.Chrome(chrome_options = options)
-
+    driver = webdriver.Chrome(chrome_options=options)
 
     webofscience_str = "https://apps.webofknowledge.com/WOS_GeneralSearch_input.do?product=WOS&search_mode=GeneralSearch&SID=6FseAuF91F1EyTi3c9o&preferencesSaved="
     driver.get(webofscience_str)
     time.sleep(5)
-    advanced_search = driver.find_element_by_xpath("/html/body/div[7]/div/ul/li[3]/a").click()
+
+    # from selenium import webdriver
+    # from selenium.webdriver.support.ui import WebDriverWait
+    # from selenium.webdriver.support import expected_conditions as EC
+    # from selenium.webdriver.common.by import By
+
+    # WebDriverWait(driver, 20).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='codefile_iframe']")))
+    # WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//input[@id='ok' and @value='OK'][starts-with(@onclick,'loginui')]"))).click()
+
+
+    advanced_search = driver.find_element_by_xpath("/html/body/div[9]/div/ul/li[4]/a").click()
     select_timespan = driver.find_element_by_xpath("//*[@id='timespan']/div[2]/div/select")
     for option in select_timespan.find_elements_by_tag_name('option'):
-        if option.text == 'Current week':
+        if 'Current week' in option.text:
             option.click()
     searchElement = driver.find_element_by_xpath("//*[@id='value(input1)']")
     searchElement.send_keys("AD=(University Florida OR Univ Florida OR UFL OR UF)")
     driver.find_element_by_xpath('//*[@id="search-button"]').click()
+    time.sleep(5)
     record_num = driver.find_element_by_css_selector('#set_1_div > a').text
     driver.find_element_by_css_selector('#set_1_div > a').click()
+    time.sleep(5)
+    driver.find_element_by_xpath('//*[@id="exportTypeName"]').click()
     save_file = driver.find_element_by_xpath('//*[@id="saveToMenu"]')
-    for option in save_file.find_elements_by_tag_name('option'):
-        if option.text == 'Save to Other File Formats':
+    time.sleep(1)
+    for option in save_file.find_elements_by_tag_name('li'):
+        if 'Other File Formats' in option.text:
             option.click()
-    record_start_num = driver.find_element_by_id("markFrom")
-    record_start_num.send_keys("1")
-    record_end_num = driver.find_element_by_id("markTo")
-    record_end_num.send_keys(record_num)
+    driver.find_element_by_xpath('//*[@id="numberOfRecordsRange"]').click()
+    # record_start_num = driver.find_element_by_xpath('//*[@id="records-range-from"]/input')
+    # record_start_num.send_keys("1")
+    # record_end_num = driver.find_element_by_xpath('//*[@id="records-range-to"]/input')
+    # record_end_num.send_keys(record_num)
     save_file_type = driver.find_element_by_xpath('//*[@id="bib_fields"]')
     for option in save_file_type.find_elements_by_tag_name('option'):
-        if option.text == 'Full Record     ':
+        if 'Full Record' in option.text and 'Cited References' not in option.text:
             option.click()
     save_file_format = driver.find_element_by_xpath('//*[@id="saveOptions"]')
     for option in save_file_format.find_elements_by_tag_name('option'):
         if option.text == 'BibTeX':
             option.click()
-    driver.find_element_by_css_selector('#ui-id-7 > form > div.quickoutput-overlay-buttonset > span > button').click()
+    driver.find_element_by_xpath('//*[@id="exportButton"]').click()
     time.sleep(5)
     driver.close()
 
@@ -59,6 +73,7 @@ def main(downloadpath):
     old_file = os.path.join(downloadpath, 'savedrecs.bib')
     new_file = os.path.join(downloadpath, new_filename)
     os.rename(old_file, new_file)
+
 
 if __name__ == '__main__':
     main(sys.argv[1])
