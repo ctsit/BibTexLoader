@@ -8,6 +8,9 @@ from selenium import webdriver
 
 def main(downloadpath):
     options = webdriver.ChromeOptions()
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.set_headless = True
     options.add_experimental_option("prefs", {
       "download.default_directory": downloadpath,
       "download.prompt_for_download": False,
@@ -15,22 +18,13 @@ def main(downloadpath):
       "safebrowsing.enabled": True,
       "plugins.always_open_pdf_externally": True
     })
-    driver = webdriver.Chrome(chrome_options=options)
+    options.add_argument("--remote-debugging-port=9222")
+    driver = webdriver.Chrome(options=options)
 
     webofscience_str = "https://apps.webofknowledge.com/WOS_GeneralSearch_input.do?product=WOS&search_mode=GeneralSearch&SID=6FseAuF91F1EyTi3c9o&preferencesSaved="
     driver.get(webofscience_str)
     time.sleep(5)
-
-    # from selenium import webdriver
-    # from selenium.webdriver.support.ui import WebDriverWait
-    # from selenium.webdriver.support import expected_conditions as EC
-    # from selenium.webdriver.common.by import By
-
-    # WebDriverWait(driver, 20).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='codefile_iframe']")))
-    # WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//input[@id='ok' and @value='OK'][starts-with(@onclick,'loginui')]"))).click()
-
-
-    advanced_search = driver.find_element_by_xpath("/html/body/div[9]/div/ul/li[4]/a").click()
+    driver.find_element_by_xpath("/html/body/div[9]/div/ul/li[4]/a").click()
     select_timespan = driver.find_element_by_xpath("//*[@id='timespan']/div[2]/div/select")
     for option in select_timespan.find_elements_by_tag_name('option'):
         if 'Current week' in option.text:
@@ -49,10 +43,6 @@ def main(downloadpath):
         if 'Other File Formats' in option.text:
             option.click()
     driver.find_element_by_xpath('//*[@id="numberOfRecordsRange"]').click()
-    # record_start_num = driver.find_element_by_xpath('//*[@id="records-range-from"]/input')
-    # record_start_num.send_keys("1")
-    # record_end_num = driver.find_element_by_xpath('//*[@id="records-range-to"]/input')
-    # record_end_num.send_keys(record_num)
     save_file_type = driver.find_element_by_xpath('//*[@id="bib_fields"]')
     for option in save_file_type.find_elements_by_tag_name('option'):
         if 'Full Record' in option.text and 'Cited References' not in option.text:
